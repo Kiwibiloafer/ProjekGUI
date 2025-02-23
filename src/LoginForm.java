@@ -55,7 +55,7 @@ public class LoginForm extends Frame {
                 if (userInfo != null) {
                     JOptionPane.showMessageDialog(null, "Wellcome " + userInfo[0] + " " + userInfo[1], "Login Success", JOptionPane.INFORMATION_MESSAGE);
                     dispose(); // Menutup jendela login
-                    new Dashboard(userInfo[0]); // Membuka dashboard sesuai dengan posisi pengguna
+                    new Dashboard(userInfo[0], userInfo[1]); // Membuka dashboard sesuai dengan posisi pengguna
                 } else {
                     messageLabel.setText("Failed to Login! Check username/password.");
                 }
