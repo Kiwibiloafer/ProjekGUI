@@ -5,7 +5,7 @@ public class Dashboard extends Frame {
 
     Dashboard() {
         // Mengatur judul dan ukuran frame
-        setTitle("Dashboard AWT");
+        setTitle("Dashboard");
         setSize(500, 400);
         setLayout(null);
         setVisible(true);
