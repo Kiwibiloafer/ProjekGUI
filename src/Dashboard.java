@@ -7,36 +7,105 @@ public class Dashboard extends Frame {
 
     Dashboard(String position, String userName) {
         this.userPosition = position;
+        this.userName = userName;
         setTitle("Dashboard");
-        setSize(600, 400);
+        setExtendedState(Frame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
-        setLayout(new FlowLayout());
-        setVisible(true);
+        setLayout(new BorderLayout());
 
+        // Panel utama dengan GridBagLayout agar lebih terpusat
+        Panel mainPanel = new Panel(new GridBagLayout());
+        mainPanel.setBackground(Color.DARK_GRAY);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
 
-        // Fitur Basic
-        Button basicFeature1 = new Button("Lihat Laporan");
-        basicFeature1.setBackground(Color.CYAN);
-        Button basicFeature2 = new Button("Edit Profil");
-        basicFeature2.setBackground(Color.GREEN);
-        Button basicFeature3 = new Button("Hubungi Dukungan");
-        basicFeature3.setBackground(Color.ORANGE);
-        add(basicFeature1);
-        add(basicFeature2);
-        add(basicFeature3);
+        // Header panel
+        Panel headerPanel = new Panel(new BorderLayout());
+        headerPanel.setBackground(Color.LIGHT_GRAY);
+        headerPanel.setPreferredSize(new Dimension(getWidth(), 50));
 
-        // Fitur tambahan hanya untuk Manager dengan warna berbeda
+        // Label kiri atas
+        Label titleLabel = new Label("Bali Rent Car", Label.LEFT);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        titleLabel.setForeground(Color.BLACK);
+        headerPanel.add(titleLabel, BorderLayout.WEST);
+
+        // Panel profil kanan atas
+        Panel profilePanel = new Panel(new FlowLayout(FlowLayout.RIGHT));
+        Label profileLabel = new Label(userPosition + " | " + userName);
+        profileLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        Button logoutButton = new Button("Log Out");
+        logoutButton.setBackground(Color.RED);
+        logoutButton.setForeground(Color.WHITE);
+        logoutButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        
+        logoutButton.addActionListener(e -> {
+            dispose(); // Menutup dashboard
+            new LoginForm(); // Kembali ke login form (pastikan LoginForm didefinisikan)
+        });
+
+        profilePanel.add(profileLabel);
+        profilePanel.add(logoutButton);
+        headerPanel.add(profilePanel, BorderLayout.EAST);
+
+        add(headerPanel, BorderLayout.NORTH);
+
+        // Label welcome
+        Label welcomeLabel = new Label(" " + userPosition, Label.CENTER);
+        welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        welcomeLabel.setForeground(Color.WHITE);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 3;
+        mainPanel.add(welcomeLabel, gbc);
+
+        // Panel untuk tombol fitur dasar
+        Panel buttonPanel = new Panel(new GridLayout(1, 3, 20, 20));
+        
+        Button RentalList = createStyledButton("Rental List", new Color(0, 120, 215));
+        RentalList.addActionListener(e -> {
+            dispose(); // Menutup dashboard
+            new RentalList(); 
+        });
+
+        Button RegisRent = createStyledButton("Regis Rent", new Color(0, 153, 51));
+        RegisRent.addActionListener(e -> {
+            dispose(); // Menutup dashboard
+            new RegisRent(); 
+        });
+
+        Button ListStock = createStyledButton("List Stock", new Color(255, 140, 0));
+        ListStock.addActionListener(e -> {
+            dispose(); // Menutup dashboard
+            new ListStock(); 
+        });
+        
+        buttonPanel.add(RentalList);
+        buttonPanel.add(RegisRent);
+        buttonPanel.add(ListStock);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 3;
+        mainPanel.add(buttonPanel, gbc);
+        
+        // Jika pengguna adalah manajer, tambahkan fitur tambahan
         if (userPosition.equals("manager")) {
-            Button managerFeature1 = new Button("Kelola Karyawan");
-            managerFeature1.setBackground(Color.RED);
-            Button managerFeature2 = new Button("Analisis Keuangan");
-            managerFeature2.setBackground(Color.MAGENTA);
-            Button managerFeature3 = new Button("Setel Kebijakan Perusahaan");
-            managerFeature3.setBackground(Color.BLUE);
-            add(managerFeature1);
-            add(managerFeature2);
-            add(managerFeature3);
+            Panel managerPanel = new Panel(new GridLayout(1, 3, 20, 20));
+            Button managerFeature1 = createStyledButton("Manage Employees", new Color(192, 0, 0));
+            Button managerFeature2 = createStyledButton("Rent Log", new Color(142, 36, 170));
+            Button managerFeature3 = createStyledButton("Payment List", new Color(0, 102, 204));
+            
+            managerPanel.add(managerFeature1);
+            managerPanel.add(managerFeature2);
+            managerPanel.add(managerFeature3);
+            
+            gbc.gridy = 2;
+            mainPanel.add(managerPanel, gbc);
         }
+        
+        add(mainPanel, BorderLayout.CENTER);
+        setVisible(true);
 
         // Event untuk menutup jendela
         addWindowListener(new WindowAdapter() {
@@ -45,4 +114,17 @@ public class Dashboard extends Frame {
             }
         });
     }
+
+    // Metode untuk membuat tombol dengan desain modern
+    private Button createStyledButton(String text, Color color) {
+        Button button = new Button(text);
+        button.setBackground(color);
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        button.setPreferredSize(new Dimension(300, 150));
+        button.setFocusable(false);
+        return button;
+    }
 }
+
+
