@@ -1,7 +1,7 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
-import javax.swing.JOptionPane;
+import javax.swing.*;
 
 public class LoginForm extends Frame {
     TextField usernameField, passwordField;
@@ -46,7 +46,6 @@ public class LoginForm extends Frame {
         messageLabel.setBounds(50, 220, 300, 30);
         add(messageLabel);
 
-
         // Event Listener untuk tombol login
         loginButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -56,7 +55,7 @@ public class LoginForm extends Frame {
                 if (userInfo != null) {
                     JOptionPane.showMessageDialog(null, "Wellcome " + userInfo[0] + " " + userInfo[1], "Login Success", JOptionPane.INFORMATION_MESSAGE);
                     dispose(); // Menutup jendela login
-                    new Dashboard(); // Membuka dashboard
+                    new Dashboard(userInfo[0]); // Membuka dashboard sesuai dengan posisi pengguna
                 } else {
                     messageLabel.setText("Failed to Login! Check username/password.");
                 }
@@ -89,7 +88,7 @@ public class LoginForm extends Frame {
                 conn.close();
                 return new String[]{position, name};
             }
-            
+
             rs.close();
             stmt.close();
             conn.close();
