@@ -38,11 +38,11 @@ CREATE TABLE `customers` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `employes`
+-- Table structure for table `employees`
 --
 
-CREATE TABLE `employes` (
-  `id_employes` int(11) NOT NULL,
+CREATE TABLE `employees` (
+  `id_employees` int(11) NOT NULL,
   `name` varchar(50) NOT NULL,
   `username` varchar(50) NOT NULL,
   `password` varchar(50) NOT NULL,
@@ -50,10 +50,10 @@ CREATE TABLE `employes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `employes`
+-- Dumping data for table `employees`
 --
 
-INSERT INTO `employes` (`id_employes`, `name`, `username`, `password`, `position`) VALUES
+INSERT INTO `employees` (`id_employees`, `name`, `username`, `password`, `position`) VALUES
 (1, 'Alif Jamaludin', 'Kiwibiloafer', 'admin', 'manager'),
 (2, 'Nindita Ramya', 'ramyanindita', '1234', 'staff');
 
@@ -68,10 +68,10 @@ ALTER TABLE `customers`
   ADD PRIMARY KEY (`id_customer`);
 
 --
--- Indexes for table `employes`
+-- Indexes for table `employees`
 --
-ALTER TABLE `employes`
-  ADD PRIMARY KEY (`id_employes`);
+ALTER TABLE `employees`
+  ADD PRIMARY KEY (`id_employees`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -84,10 +84,10 @@ ALTER TABLE `customers`
   MODIFY `id_customer` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `employes`
+-- AUTO_INCREMENT for table `employees`
 --
-ALTER TABLE `employes`
-  MODIFY `id_employes` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+ALTER TABLE `employees`
+  MODIFY `id_employees` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -74,7 +74,7 @@ public class LoginForm extends Frame {
     private String[] authenticate(String username, String password) {
         try {
             Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/projekgui", "root", "");
-            String sql = "SELECT position, name, id_employes FROM employes WHERE username = ? AND password = ?";
+            String sql = "SELECT position, name, id_employees FROM employees WHERE username = ? AND password = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, username);
             stmt.setString(2, password);
@@ -83,7 +83,7 @@ public class LoginForm extends Frame {
             if (rs.next()) {
                 String position = rs.getString("position");
                 String name = rs.getString("name");
-                Integer idEmployees = rs.getInt("id_employes");
+                Integer idEmployees = rs.getInt("id_employees");
                 rs.close();
                 stmt.close();
                 conn.close();
