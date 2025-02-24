@@ -4,10 +4,13 @@ import java.awt.event.*;
 public class Dashboard extends Frame {
     String userPosition;
     String userName;
+    String idEmployees;
 
-    Dashboard(String position, String userName) {
+    Dashboard(String position, String userName, String idEmployees) {
         this.userPosition = position;
         this.userName = userName;
+        this.idEmployees = idEmployees;
+
         setTitle("Dashboard");
         setExtendedState(Frame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
@@ -41,7 +44,7 @@ public class Dashboard extends Frame {
         
         logoutButton.addActionListener(e -> {
             dispose(); // Menutup dashboard
-            new LoginForm(); // Kembali ke login form (pastikan LoginForm didefinisikan)
+            new LoginForm(); // Kembali ke login form
         });
 
         profilePanel.add(profileLabel);
@@ -65,19 +68,19 @@ public class Dashboard extends Frame {
         Button RentalList = createStyledButton("Rental List", new Color(0, 120, 215));
         RentalList.addActionListener(e -> {
             dispose(); // Menutup dashboard
-            new RentalList(userPosition, userName); 
+            new RentalList(userPosition, userName, idEmployees); 
         });
 
         Button RegisRent = createStyledButton("Regis Rent", new Color(0, 153, 51));
         RegisRent.addActionListener(e -> {
             dispose(); // Menutup dashboard
-            new RegisRent(userPosition, userName); 
+            new RegisRent(userPosition, userName, idEmployees); 
         });
 
         Button ListStock = createStyledButton("List Stock", new Color(255, 140, 0));
         ListStock.addActionListener(e -> {
             dispose(); // Menutup dashboard
-            new ListStock(userPosition, userName); 
+            new ListStock(userPosition, userName, idEmployees); 
         });
         
         buttonPanel.add(RentalList);
@@ -92,13 +95,28 @@ public class Dashboard extends Frame {
         // Jika pengguna adalah manajer, tambahkan fitur tambahan
         if (userPosition.equals("manager")) {
             Panel managerPanel = new Panel(new GridLayout(1, 3, 20, 20));
-            Button managerFeature1 = createStyledButton("Manage Employees", new Color(192, 0, 0));
-            Button managerFeature2 = createStyledButton("Rent Log", new Color(142, 36, 170));
-            Button managerFeature3 = createStyledButton("Payment List", new Color(0, 102, 204));
+
+            Button Manemployees = createStyledButton("Manage Employees", new Color(192, 0, 0));
+            Manemployees.addActionListener(e -> {
+                dispose(); // Menutup dashboard
+                new Manemployees(userPosition, userName, idEmployees); 
+            });
+
+            Button RentLog = createStyledButton("Rent Log", new Color(142, 36, 170));
+            RentLog.addActionListener(e -> {
+                dispose(); // Menutup dashboard
+                new RentLog(userPosition, userName, idEmployees); 
+            });
+
+            Button PayList = createStyledButton("Payment List", new Color(0, 102, 204));
+            PayList.addActionListener(e -> {
+                dispose(); // Menutup dashboard
+                new PayList(userPosition, userName, idEmployees); 
+            });
             
-            managerPanel.add(managerFeature1);
-            managerPanel.add(managerFeature2);
-            managerPanel.add(managerFeature3);
+            managerPanel.add(Manemployees);
+            managerPanel.add(RentLog);
+            managerPanel.add(PayList);
             
             gbc.gridy = 2;
             mainPanel.add(managerPanel, gbc);

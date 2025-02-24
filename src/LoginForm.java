@@ -55,7 +55,7 @@ public class LoginForm extends Frame {
                 if (userInfo != null) {
                     JOptionPane.showMessageDialog(null, "Wellcome " + userInfo[0] + " " + userInfo[1], "Login Success", JOptionPane.INFORMATION_MESSAGE);
                     dispose(); // Menutup jendela login
-                    new Dashboard(userInfo[0], userInfo[1]); // Membuka dashboard sesuai dengan posisi pengguna
+                    new Dashboard(userInfo[0], userInfo[1], userInfo[2]); // Membuka dashboard sesuai dengan posisi pengguna
                 } else {
                     messageLabel.setText("Failed to Login! Check username/password.");
                 }
@@ -74,7 +74,7 @@ public class LoginForm extends Frame {
     private String[] authenticate(String username, String password) {
         try {
             Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/projekgui", "root", "");
-            String sql = "SELECT position, name FROM employes WHERE username = ? AND password = ?";
+            String sql = "SELECT position, name, id_employes FROM employes WHERE username = ? AND password = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, username);
             stmt.setString(2, password);
@@ -83,10 +83,11 @@ public class LoginForm extends Frame {
             if (rs.next()) {
                 String position = rs.getString("position");
                 String name = rs.getString("name");
+                Integer idEmployees = rs.getInt("id_employes");
                 rs.close();
                 stmt.close();
                 conn.close();
-                return new String[]{position, name};
+                return new String[]{position, name, Integer.toString(idEmployees)};
             }
 
             rs.close();

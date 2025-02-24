@@ -4,10 +4,12 @@ import java.awt.event.*;
 public class ListStock extends Frame {
     String userPosition;
     String userName;
+    String idEmployees;
 
-    ListStock(String UserPosition, String UserName) {
+    ListStock(String UserPosition, String UserName, String idEmployees) {
         this.userPosition = UserPosition;
         this.userName = UserName;
+        this.idEmployees = idEmployees;
         setTitle("ListStock");
         setExtendedState(Frame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
@@ -35,7 +37,7 @@ public class ListStock extends Frame {
 
         backButton.addActionListener(e -> {
             dispose(); // Tutup frame saat ini
-            new Dashboard(userPosition, userName); // Kembali ke Dashboard (pastikan kelas Dashboard sudah ada)
+            new Dashboard(userPosition, userName, idEmployees); // Kembali ke Dashboard (pastikan kelas Dashboard sudah ada)
         });
 
         // Label kiri atas

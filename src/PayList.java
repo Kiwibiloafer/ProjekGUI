@@ -1,16 +1,14 @@
 import java.awt.*;
 import java.awt.event.*;
 
-public class RegisRent extends Frame {
+public class PayList extends Frame {
     String userPosition;
     String userName;
     String idEmployees;
 
-    RegisRent(String UserPosition, String UserName, String idEmployees) {
+    PayList(String UserPosition, String UserName, String idEmployees) {
         this.userPosition = UserPosition;
         this.userName = UserName;
-        this.idEmployees = idEmployees;
-
         setTitle("ListStock");
         setExtendedState(Frame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
