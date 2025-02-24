@@ -6,7 +6,7 @@ Bali Rent Car adalah sebuah aplikasi berbasis GUI yang dikembangkan menggunakan 
 
 ## Fitur yang Sudah Selesai
 1. **Login Form**
-   - Pengguna dapat login menggunakan kredensial yang tersimpan dalam database `projekgui` pada tabel `user`.
+   - Pengguna dapat login menggunakan kredensial yang tersimpan dalam database `projekgui` pada tabel `employees`.
    - Sistem memvalidasi username dan password.
    
 2. **Dashboard Dasar**
@@ -17,7 +17,7 @@ Bali Rent Car adalah sebuah aplikasi berbasis GUI yang dikembangkan menggunakan 
    - Struktur subdashboard telah dibuat untuk menampung berbagai fitur yang akan dikembangkan.
    
 4. **Autentikasi Database**
-   - Login berhasil terhubung dengan database `projekgui`, memverifikasi data pengguna dari tabel `user`.
+   - Login berhasil terhubung dengan database `projekgui`, memverifikasi data pengguna dari tabel `employees`.
 
 ## Tugas yang Belum Selesai
 1. **Pengembangan UI dan Back-End (CRUD) pada Subdashboard**
@@ -28,7 +28,7 @@ Bali Rent Car adalah sebuah aplikasi berbasis GUI yang dikembangkan menggunakan 
    - Penyempurnaan desain dan fungsionalitas aplikasi sebelum implementasi penuh.
    
 3. **Pembuatan Seluruh Tabel Database**
-   - Saat ini, hanya tabel `user` yang telah dibuat.
+   - Saat ini, hanya tabel `employees` yang telah dibuat.
    - Tabel tambahan untuk menyimpan data penyewaan, mobil, pelanggan, dan lainnya masih perlu dibuat.
 
 ## Teknologi yang Digunakan
@@ -38,7 +38,7 @@ Bali Rent Car adalah sebuah aplikasi berbasis GUI yang dikembangkan menggunakan 
 
 ## Cara Menjalankan Aplikasi
 1. Pastikan XAMPP berjalan dan database `projekgui` telah dibuat.
-2. Import tabel `user` ke dalam database.
+2. Import tabel `employees` ke dalam database.
 3. Jalankan file utama proyek menggunakan Java.
 
 ## Catatan Tambahan
@@ -47,7 +47,7 @@ Bali Rent Car adalah sebuah aplikasi berbasis GUI yang dikembangkan menggunakan 
 
 ---
 
-**Author:** [Nama Anda]
+**Author:** Alif Jamaludin & Nindita Ramya
 
 **Status Proyek:** Dalam Pengembangan 🚧
 
