@@ -88,8 +88,27 @@ public class ListStock extends Frame {
             }
         });
         
-        bottomPanelRight.add(editCarButton);
-        bottomPanelRight.add(addCarButton);
+        Button viewCarButton = new Button("view detail Car");
+        viewCarButton.setBackground(Color.GRAY);
+        viewCarButton.setForeground(Color.WHITE);
+        viewCarButton.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        viewCarButton.setSize(30, 20);
+        viewCarButton.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow != -1) {
+                int carId = (int) model.getValueAt(selectedRow, 0);
+                new viewCarForm(carId);
+            } else {
+                JOptionPane.showMessageDialog(this, "Choose the Car", "Warning", JOptionPane.WARNING_MESSAGE);
+            }
+        });
+
+        bottomPanelRight.add(viewCarButton);
+        if (userPosition.equals("manager")) {
+            bottomPanelRight.add(editCarButton);
+            bottomPanelRight.add(addCarButton);
+        }
+        
         bottomPanel.add(bottomPanelRight, BorderLayout.EAST);
         add(bottomPanel, BorderLayout.SOUTH);
 
@@ -223,6 +242,62 @@ public class ListStock extends Frame {
         });
     
         carForm.setVisible(true);
+    }
+
+    private class viewCarForm extends JDialog {
+        viewCarForm(int carId) {
+            setTitle("View Car");
+            setSize(400, 400);
+            setLayout(new GridLayout(9, 2));
+            setModal(true);
+            
+            JTextField merkField = new JTextField();
+            JTextField typeField = new JTextField();
+            JTextField colourField = new JTextField();
+            JTextField frameNumberField = new JTextField();
+            JTextField engineNumberField = new JTextField();
+            JTextField regNumberField = new JTextField();
+            JTextField statusField = new JTextField();
+            JTextField priceField = new JTextField();
+            
+            merkField.setEditable(false);
+            typeField.setEditable(false);
+            colourField.setEditable(false);
+            frameNumberField.setEditable(false);
+            engineNumberField.setEditable(false);
+            regNumberField.setEditable(false);
+            statusField.setEditable(false);
+            priceField.setEditable(false);
+            
+            try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/projekgui", "root", "");
+                 PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM car WHERE id_car = ?")) {
+                pstmt.setInt(1, carId);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    merkField.setText(rs.getString("merk"));
+                    typeField.setText(rs.getString("type"));
+                    colourField.setText(rs.getString("colour"));
+                    frameNumberField.setText(rs.getString("frame_number"));
+                    engineNumberField.setText(rs.getString("engine_number"));
+                    regNumberField.setText(rs.getString("reg_number"));
+                    statusField.setText(rs.getString("status"));
+                    priceField.setText(String.valueOf(rs.getInt("price")));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            
+            add(new JLabel("Merk:")); add(merkField);
+            add(new JLabel("Type:")); add(typeField);
+            add(new JLabel("Colour:")); add(colourField);
+            add(new JLabel("Frame No:")); add(frameNumberField);
+            add(new JLabel("Engine No:")); add(engineNumberField);
+            add(new JLabel("Reg No:")); add(regNumberField);
+            add(new JLabel("Status:")); add(statusField);
+            add(new JLabel("Price:")); add(priceField);
+            
+            setVisible(true);
+        }
     }
     
 }
