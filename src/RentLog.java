@@ -1,26 +1,24 @@
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.table.*;
+import java.sql.*;
 
 public class RentLog extends Frame {
     String userPosition;
     String userName;
     String idEmployees;
+    JTable table;
+    DefaultTableModel model;
 
     RentLog(String UserPosition, String UserName, String idEmployees) {
         this.userPosition = UserPosition;
         this.userName = UserName;
         this.idEmployees = idEmployees;
-        setTitle("ListStock");
+        setTitle("RentLog");
         setExtendedState(Frame.MAXIMIZED_BOTH);
-        setLocationRelativeTo(null);
         setLayout(new BorderLayout());
         setVisible(true);
-
-        // Panel utama dengan GridBagLayout agar lebih terpusat
-        Panel mainPanel = new Panel(new GridBagLayout());
-        mainPanel.setBackground(Color.DARK_GRAY);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
 
         // Header panel
         Panel headerPanel = new Panel(new BorderLayout());
@@ -28,28 +26,23 @@ public class RentLog extends Frame {
         headerPanel.setPreferredSize(new Dimension(getWidth(), 50));
 
         Panel leftPanel = new Panel(new FlowLayout(FlowLayout.LEFT));
-
-        //Tombol back
         Button backButton = new Button("Back");
         backButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
         backButton.setBackground(Color.ORANGE);
         backButton.setForeground(Color.BLACK);
-
         backButton.addActionListener(e -> {
-            dispose(); // Tutup frame saat ini
-            new Dashboard(userPosition, userName, idEmployees); // Kembali ke Dashboard (pastikan kelas Dashboard sudah ada)
+            dispose();
+            new Dashboard(userPosition, userName, idEmployees);
         });
-
-        // Label kiri atas
+        
         Label titleLabel = new Label("Bali Rent Car", Label.LEFT);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
         titleLabel.setForeground(Color.BLACK);
-        
         leftPanel.add(backButton);
         leftPanel.add(titleLabel);
         headerPanel.add(leftPanel, BorderLayout.WEST);
 
-        // Panel profil kanan atas
+        // Profile Panel
         Panel profilePanel = new Panel(new FlowLayout(FlowLayout.RIGHT));
         Label profileLabel = new Label(userPosition + " | " + userName);
         profileLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
@@ -57,22 +50,268 @@ public class RentLog extends Frame {
         logoutButton.setBackground(Color.RED);
         logoutButton.setForeground(Color.WHITE);
         logoutButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        
         logoutButton.addActionListener(e -> {
-            dispose(); // Menutup dashboard
-            new LoginForm(); // Kembali ke login form (pastikan LoginForm didefinisikan)
+            dispose();
+            new LoginForm();
         });
-
+        
         profilePanel.add(profileLabel);
         profilePanel.add(logoutButton);
         headerPanel.add(profilePanel, BorderLayout.EAST);
         add(headerPanel, BorderLayout.NORTH);
-        //tulis code disini
+
+        // Panel bawah untuk tombol
+        Panel bottomPanel = new Panel(new BorderLayout());
+        bottomPanel.setBackground(Color.LIGHT_GRAY);
+        bottomPanel.setPreferredSize(new Dimension(getWidth(), 50));
+        Panel bottomPanelRight = new Panel(new FlowLayout(FlowLayout.RIGHT));
+
+        Button addCarButton = new Button("Add Car");
+        addCarButton.setBackground(Color.GREEN);
+        addCarButton.setForeground(Color.WHITE);
+        addCarButton.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        addCarButton.setSize(30, 20);
+        addCarButton.addActionListener(e -> openCarForm(null));
         
+        Button editCarButton = new Button("Edit Car");
+        editCarButton.setBackground(Color.GRAY);
+        editCarButton.setForeground(Color.WHITE);
+        editCarButton.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        editCarButton.setSize(30, 20);
+        editCarButton.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow != -1) {
+                int carId = (int) model.getValueAt(selectedRow, 0);
+                openCarForm(carId);
+            } else {
+                JOptionPane.showMessageDialog(this, "Choose the Car", "Warning", JOptionPane.WARNING_MESSAGE);
+            }
+        });
+        
+        Button viewCarButton = new Button("view detail Car");
+        viewCarButton.setBackground(Color.GRAY);
+        viewCarButton.setForeground(Color.WHITE);
+        viewCarButton.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        viewCarButton.setSize(30, 20);
+        viewCarButton.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow != -1) {
+                int carId = (int) model.getValueAt(selectedRow, 0);
+                new viewCarForm(carId);
+            } else {
+                JOptionPane.showMessageDialog(this, "Choose the Car", "Warning", JOptionPane.WARNING_MESSAGE);
+            }
+        });
+
+        bottomPanelRight.add(viewCarButton);
+        if (userPosition.equals("manager")) {
+            bottomPanelRight.add(editCarButton);
+            bottomPanelRight.add(addCarButton);
+        }
+        
+        bottomPanel.add(bottomPanelRight, BorderLayout.EAST);
+        add(bottomPanel, BorderLayout.SOUTH);
+
+        // Model tabel (read-only)
+        String[] columnNames = {"ID Rent", "Customer Name", "Merk", "Type", "Colour", "Status", "Rent Date", "Duration", "Return Date", "Explanation", "Payment Status", "Staff"};
+        model = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        
+        table = new JTable(model);
+        table.setRowHeight(25);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        table.getTableHeader().setBackground(Color.DARK_GRAY);
+        table.getTableHeader().setForeground(Color.WHITE);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.getTableHeader().setReorderingAllowed(false);
+        
+        
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setPreferredSize(new Dimension(800, 300));
+        add(scrollPane, BorderLayout.CENTER);
+        
+        loadTableData();
+        
+        // Event untuk menutup jendela
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 dispose();
             }
         });
     }
+
+    private void loadTableData() {
+        model.setRowCount(0);
+        String query = "SELECT r.id_rent, c.name AS customer_name, ca.merk, ca.type, ca.colour, " +
+                       "r.status, r.rent_date, r.duration, r.return_date, r.explanation, " +
+                       "p.status AS payment_status, e.name AS staff " +
+                       "FROM rents r " +
+                       "JOIN customers c ON r.id_customer = c.id_customer " +
+                       "JOIN car ca ON r.id_car = ca.id_car " +
+                       "LEFT JOIN payments p ON r.id_payments = p.id_payments " +
+                       "JOIN employees e ON r.id_employees = e.id_employees " +
+                       "ORDER BY FIELD(r.status, 'ready', 'on going', 'not available')";
+        
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/projekgui", "root", "");
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+            
+            while (rs.next()) {
+                model.addRow(new Object[]{
+                    rs.getInt("id_rent"),
+                    rs.getString("customer_name"),
+                    rs.getString("merk"),
+                    rs.getString("type"),
+                    rs.getString("colour"),
+                    rs.getString("status"),
+                    rs.getDate("rent_date"),
+                    rs.getInt("duration"),
+                    rs.getDate("return_date"),
+                    rs.getString("explanation"),
+                    rs.getString("payment_status"),
+                    rs.getString("staff")
+                });
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
+
+    private void openCarForm(Integer carId) {
+        JDialog carForm = new JDialog((Frame) null, carId == null ? "Add Car" : "Edit Car", true);
+        carForm.setSize(400, 400);
+        carForm.setLayout(new GridLayout(10, 2));
+    
+        JTextField merkField = new JTextField();
+        JTextField typeField = new JTextField();
+        JTextField colourField = new JTextField();
+        JTextField frameNumberField = new JTextField();
+        JTextField engineNumberField = new JTextField();
+        JTextField regNumberField = new JTextField();
+        JTextField statusField = new JTextField();
+        JTextField priceField = new JTextField();
+        JButton saveButton = new JButton("Save");
+    
+        // Jika mode edit, isi field dengan data dari database
+        if (carId != null) {
+            try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/projekgui", "root", "");
+                 PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM car WHERE id_car = ?")) {
+                pstmt.setInt(1, carId);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    merkField.setText(rs.getString("merk"));
+                    typeField.setText(rs.getString("type"));
+                    colourField.setText(rs.getString("colour"));
+                    frameNumberField.setText(rs.getString("frame_number"));
+                    engineNumberField.setText(rs.getString("engine_number"));
+                    regNumberField.setText(rs.getString("reg_number"));
+                    statusField.setText(rs.getString("status"));
+                    priceField.setText(String.valueOf(rs.getInt("price")));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    
+        carForm.add(new JLabel("Merk:")); carForm.add(merkField);
+        carForm.add(new JLabel("Type:")); carForm.add(typeField);
+        carForm.add(new JLabel("Colour:")); carForm.add(colourField);
+        carForm.add(new JLabel("Frame No:")); carForm.add(frameNumberField);
+        carForm.add(new JLabel("Engine No:")); carForm.add(engineNumberField);
+        carForm.add(new JLabel("Reg No:")); carForm.add(regNumberField);
+        carForm.add(new JLabel("Status:")); carForm.add(statusField);
+        carForm.add(new JLabel("Price:")); carForm.add(priceField);
+        carForm.add(saveButton);
+    
+        saveButton.addActionListener(e -> {
+            try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/projekgui", "root", "")) {
+                String query;
+                if (carId == null) {
+                    query = "INSERT INTO car (merk, type, colour, frame_number, engine_number, reg_number, status, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                } else {
+                    query = "UPDATE car SET merk=?, type=?, colour=?, frame_number=?, engine_number=?, reg_number=?, status=?, price=? WHERE id_car=?";
+                }
+                PreparedStatement pstmt = conn.prepareStatement(query);
+                pstmt.setString(1, merkField.getText());
+                pstmt.setString(2, typeField.getText());
+                pstmt.setString(3, colourField.getText());
+                pstmt.setString(4, frameNumberField.getText());
+                pstmt.setString(5, engineNumberField.getText());
+                pstmt.setString(6, regNumberField.getText());
+                pstmt.setString(7, statusField.getText());
+                pstmt.setInt(8, Integer.parseInt(priceField.getText()));
+                if (carId != null) pstmt.setInt(9, carId);
+                pstmt.executeUpdate();
+                loadTableData();
+                carForm.dispose();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        });
+    
+        carForm.setVisible(true);
+    }
+
+    private class viewCarForm extends JDialog {
+        viewCarForm(int carId) {
+            setTitle("View Car");
+            setSize(400, 400);
+            setLayout(new GridLayout(9, 2));
+            setModal(true);
+            
+            JTextField merkField = new JTextField();
+            JTextField typeField = new JTextField();
+            JTextField colourField = new JTextField();
+            JTextField frameNumberField = new JTextField();
+            JTextField engineNumberField = new JTextField();
+            JTextField regNumberField = new JTextField();
+            JTextField statusField = new JTextField();
+            JTextField priceField = new JTextField();
+            
+            merkField.setEditable(false);
+            typeField.setEditable(false);
+            colourField.setEditable(false);
+            frameNumberField.setEditable(false);
+            engineNumberField.setEditable(false);
+            regNumberField.setEditable(false);
+            statusField.setEditable(false);
+            priceField.setEditable(false);
+            
+            try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/projekgui", "root", "");
+                 PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM car WHERE id_car = ?")) {
+                pstmt.setInt(1, carId);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    merkField.setText(rs.getString("merk"));
+                    typeField.setText(rs.getString("type"));
+                    colourField.setText(rs.getString("colour"));
+                    frameNumberField.setText(rs.getString("frame_number"));
+                    engineNumberField.setText(rs.getString("engine_number"));
+                    regNumberField.setText(rs.getString("reg_number"));
+                    statusField.setText(rs.getString("status"));
+                    priceField.setText(String.valueOf(rs.getInt("price")));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            
+            add(new JLabel("Merk:")); add(merkField);
+            add(new JLabel("Type:")); add(typeField);
+            add(new JLabel("Colour:")); add(colourField);
+            add(new JLabel("Frame No:")); add(frameNumberField);
+            add(new JLabel("Engine No:")); add(engineNumberField);
+            add(new JLabel("Reg No:")); add(regNumberField);
+            add(new JLabel("Status:")); add(statusField);
+            add(new JLabel("Price:")); add(priceField);
+            
+            setVisible(true);
+        }
+    }
+    
 }
