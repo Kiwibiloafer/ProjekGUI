@@ -1,16 +1,8 @@
 import java.awt.*;
 import java.awt.event.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.*;
+import javax.swing.table.*;
+import java.sql.*;
 
 public class RentLog extends Frame {
     String userPosition;
@@ -23,7 +15,7 @@ public class RentLog extends Frame {
         this.userPosition = UserPosition;
         this.userName = UserName;
         this.idEmployees = idEmployees;
-        setTitle("ListStock");
+        setTitle("RentLog");
         setExtendedState(Frame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
@@ -54,7 +46,7 @@ public class RentLog extends Frame {
         });
 
         // Label kiri atas
-        Label titleLabel = new Label("Bali Rent Car", Label.LEFT);
+        Label titleLabel = new Label("Bali Rent Log", Label.LEFT);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
         titleLabel.setForeground(Color.BLACK);
         
@@ -81,6 +73,49 @@ public class RentLog extends Frame {
         headerPanel.add(profilePanel, BorderLayout.EAST);
         add(headerPanel, BorderLayout.NORTH);
         //tulis code disini
+
+        // Panel bawah untuk tombol
+        Panel bottomPanel = new Panel(new BorderLayout());
+        bottomPanel.setBackground(Color.LIGHT_GRAY);
+        bottomPanel.setPreferredSize(new Dimension(getWidth(), 50));
+        Panel bottomPanelRight = new Panel(new FlowLayout(FlowLayout.RIGHT));
+
+        
+        Button editLogButton = new Button("Edit Log");
+        editLogButton.setBackground(Color.GREEN);
+        editLogButton.setForeground(Color.WHITE);
+        editLogButton.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        editLogButton.setSize(30, 20);
+        editLogButton.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow != -1) {
+                int carId = (int) model.getValueAt(selectedRow, 0);
+                new editLogForm(carId);
+            } else {
+                JOptionPane.showMessageDialog(this, "Choose the Log", "Warning", JOptionPane.WARNING_MESSAGE);
+            }
+        });
+        
+        Button viewLogButton = new Button("view detail Log");
+        viewLogButton.setBackground(Color.GRAY);
+        viewLogButton.setForeground(Color.WHITE);
+        viewLogButton.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        viewLogButton.setSize(30, 20);
+        viewLogButton.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow != -1) {
+                int id_rent = (int) model.getValueAt(selectedRow, 0);
+                new viewLogForm(id_rent);
+            } else {
+                JOptionPane.showMessageDialog(this, "Choose the Log", "Warning", JOptionPane.WARNING_MESSAGE);
+            }
+        });
+
+        bottomPanelRight.add(viewLogButton);
+        bottomPanelRight.add(editLogButton);
+        
+        bottomPanel.add(bottomPanelRight, BorderLayout.EAST);
+        add(bottomPanel, BorderLayout.SOUTH);
 
         // Model tabel (read-only)
         String[] columnNames = {"ID Rent", "Customer Name", "Merk", "Type", "Colour", "Status", "Rent Date", "Duration", "Return Date", "Explanation", "Payment Status", "Staff"};
@@ -149,5 +184,238 @@ public class RentLog extends Frame {
             JOptionPane.showMessageDialog(null, "Gagal memuat data: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+    private class viewLogForm extends JDialog {
+        public viewLogForm(int id_rent) {
+            setTitle("View Log");
+            setSize(500, 500);
+            setLayout(new GridLayout(0, 2));
+            setModal(true);
+            
+            // Membuat label dan field
+            JTextField idField = new JTextField();
+            JTextField customerField = new JTextField();
+            JTextField phoneField = new JTextField();
+            JTextField addressField = new JTextField();
+            JTextField nationalField = new JTextField();
+            JTextField merkField = new JTextField();
+            JTextField typeField = new JTextField();
+            JTextField colourField = new JTextField();
+            JTextField regNumberField = new JTextField();
+            JTextField frameNumberField = new JTextField();
+            JTextField engineNumberField = new JTextField();
+            JTextField statusField = new JTextField();
+            JTextField rentDateField = new JTextField();
+            JTextField durationField = new JTextField();
+            JTextField returnDateField = new JTextField();
+            JTextField explanationField = new JTextField();
+            JTextField paymentStatusField = new JTextField();
+            JTextField priceField = new JTextField();
+            JTextField staffField = new JTextField();
 
+            // Membuat semua field menjadi non-editable
+            JTextField[] fields = {idField, customerField, phoneField, addressField, nationalField, merkField,
+                    typeField, colourField, regNumberField, frameNumberField, engineNumberField, statusField,
+                    rentDateField, durationField, returnDateField, explanationField, paymentStatusField, priceField, staffField};
+            for (JTextField field : fields) {
+                field.setEditable(false);
+            }
+
+            // Query untuk mengambil data dari database
+            String query = "SELECT r.id_rent, c.name AS customer_name, c.address, c.phone_number, c.national_id, " +
+                    "car.merk, car.type, car.colour, car.reg_number, car.frame_number, car.engine_number, " +
+                    "r.status, r.rent_date, r.duration, r.return_date, r.explanation, " +
+                    "p.status AS payment_status, p.total_price, e.name AS staff " +
+                    "FROM rents r " +
+                    "JOIN customers c ON r.id_customer = c.id_customer " +
+                    "JOIN car car ON r.id_car = car.id_car " +
+                    "LEFT JOIN payments p ON r.id_payment = p.id_payment " +
+                    "JOIN employees e ON r.id_employees = e.id_employees " +
+                    "WHERE r.id_rent = ?";
+
+            try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/projekgui", "root", "");
+                PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setInt(1, id_rent);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    idField.setText(rs.getString("id_rent"));
+                    customerField.setText(rs.getString("customer_name"));
+                    addressField.setText(rs.getString("address"));
+                    phoneField.setText(rs.getString("phone_number"));
+                    nationalField.setText(rs.getString("national_id"));
+                    merkField.setText(rs.getString("merk"));
+                    typeField.setText(rs.getString("type"));
+                    colourField.setText(rs.getString("colour"));
+                    regNumberField.setText(rs.getString("reg_number"));
+                    frameNumberField.setText(rs.getString("frame_number"));
+                    engineNumberField.setText(rs.getString("engine_number"));
+                    statusField.setText(rs.getString("status"));
+                    rentDateField.setText(rs.getString("rent_date"));
+                    durationField.setText(rs.getString("duration"));
+                    returnDateField.setText(rs.getString("return_date"));
+                    explanationField.setText(rs.getString("explanation"));
+                    paymentStatusField.setText(rs.getString("payment_status"));
+                    priceField.setText(rs.getString("total_price"));
+                    staffField.setText(rs.getString("staff"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            // Menambahkan komponen ke dialog
+            add(new JLabel("ID Rent:")); add(idField);
+            add(new JLabel("Customer Name:")); add(customerField);
+            add(new JLabel("Phone Number:")); add(phoneField);
+            add(new JLabel("Address:")); add(addressField);
+            add(new JLabel("National ID:")); add(nationalField);
+            add(new JLabel("Merk:")); add(merkField);
+            add(new JLabel("Type:")); add(typeField);
+            add(new JLabel("Colour:")); add(colourField);
+            add(new JLabel("Reg Number:")); add(regNumberField);
+            add(new JLabel("Frame Number:")); add(frameNumberField);
+            add(new JLabel("Engine Number:")); add(engineNumberField);
+            add(new JLabel("Status:")); add(statusField);
+            add(new JLabel("Rent Date:")); add(rentDateField);
+            add(new JLabel("Duration:")); add(durationField);
+            add(new JLabel("Return Date:")); add(returnDateField);
+            add(new JLabel("Explanation:")); add(explanationField);
+            add(new JLabel("Payment Status:")); add(paymentStatusField);
+            add(new JLabel("Total Price:")); add(priceField);
+            add(new JLabel("Staff:")); add(staffField);
+            
+            // Menambahkan tombol close
+            JButton closeButton = new JButton("Close");
+            closeButton.addActionListener(e -> dispose());
+            add(new JLabel()); // Spacer
+            add(closeButton);
+            
+            setVisible(true);
+        }
+    }
+    
+    private class editLogForm extends JDialog {
+        public editLogForm(int id_rent) {
+            setTitle("Edit Log");
+            setSize(500, 500);
+            setLayout(new GridLayout(0, 2));
+            setModal(true);
+            
+            // Membuat label dan field
+            JTextField idField = new JTextField();
+            JTextField customerField = new JTextField();
+            JTextField phoneField = new JTextField();
+            JTextField addressField = new JTextField();
+            JTextField nationalField = new JTextField();
+            JTextField merkField = new JTextField();
+            JTextField typeField = new JTextField();
+            JTextField colourField = new JTextField();
+            JTextField regNumberField = new JTextField();
+            JTextField frameNumberField = new JTextField();
+            JTextField engineNumberField = new JTextField();
+            JTextField statusField = new JTextField(); // Bisa diedit
+            JTextField rentDateField = new JTextField();
+            JTextField durationField = new JTextField();
+            JTextField returnDateField = new JTextField();
+            JTextField explanationField = new JTextField(); // Bisa diedit
+            JTextField paymentStatusField = new JTextField();
+            JTextField priceField = new JTextField();
+            JTextField staffField = new JTextField();
+    
+            // Membuat semua field menjadi non-editable kecuali status & explanation
+            JTextField[] nonEditableFields = {idField, customerField, phoneField, addressField, nationalField, merkField,
+                    typeField, colourField, regNumberField, frameNumberField, engineNumberField,
+                    rentDateField, durationField, returnDateField, paymentStatusField, priceField, staffField};
+            for (JTextField field : nonEditableFields) {
+                field.setEditable(false);
+            }
+    
+            // Query untuk mengambil data dari database
+            String query = "SELECT r.id_rent, c.name AS customer_name, c.address, c.phone_number, c.national_id, " +
+                    "car.merk, car.type, car.colour, car.reg_number, car.frame_number, car.engine_number, " +
+                    "r.status, r.rent_date, r.duration, r.return_date, r.explanation, " +
+                    "p.status AS payment_status, p.total_price, e.name AS staff " +
+                    "FROM rents r " +
+                    "JOIN customers c ON r.id_customer = c.id_customer " +
+                    "JOIN car car ON r.id_car = car.id_car " +
+                    "LEFT JOIN payments p ON r.id_payment = p.id_payment " +
+                    "JOIN employees e ON r.id_employees = e.id_employees " +
+                    "WHERE r.id_rent = ?";
+    
+            try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/projekgui", "root", "");
+                 PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setInt(1, id_rent);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    idField.setText(rs.getString("id_rent"));
+                    customerField.setText(rs.getString("customer_name"));
+                    addressField.setText(rs.getString("address"));
+                    phoneField.setText(rs.getString("phone_number"));
+                    nationalField.setText(rs.getString("national_id"));
+                    merkField.setText(rs.getString("merk"));
+                    typeField.setText(rs.getString("type"));
+                    colourField.setText(rs.getString("colour"));
+                    regNumberField.setText(rs.getString("reg_number"));
+                    frameNumberField.setText(rs.getString("frame_number"));
+                    engineNumberField.setText(rs.getString("engine_number"));
+                    statusField.setText(rs.getString("status"));
+                    rentDateField.setText(rs.getString("rent_date"));
+                    durationField.setText(rs.getString("duration"));
+                    returnDateField.setText(rs.getString("return_date"));
+                    explanationField.setText(rs.getString("explanation"));
+                    paymentStatusField.setText(rs.getString("payment_status"));
+                    priceField.setText(rs.getString("total_price"));
+                    staffField.setText(rs.getString("staff"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+    
+            // Menambahkan komponen ke dialog
+            add(new JLabel("ID Rent:")); add(idField);
+            add(new JLabel("Customer Name:")); add(customerField);
+            add(new JLabel("Phone Number:")); add(phoneField);
+            add(new JLabel("Address:")); add(addressField);
+            add(new JLabel("National ID:")); add(nationalField);
+            add(new JLabel("Merk:")); add(merkField);
+            add(new JLabel("Type:")); add(typeField);
+            add(new JLabel("Colour:")); add(colourField);
+            add(new JLabel("Reg Number:")); add(regNumberField);
+            add(new JLabel("Frame Number:")); add(frameNumberField);
+            add(new JLabel("Engine Number:")); add(engineNumberField);
+            add(new JLabel("Status:")); add(statusField);
+            add(new JLabel("Rent Date:")); add(rentDateField);
+            add(new JLabel("Duration:")); add(durationField);
+            add(new JLabel("Return Date:")); add(returnDateField);
+            add(new JLabel("Explanation:")); add(explanationField);
+            add(new JLabel("Payment Status:")); add(paymentStatusField);
+            add(new JLabel("Total Price:")); add(priceField);
+            add(new JLabel("Staff:")); add(staffField);
+            
+            // Tombol untuk menyimpan perubahan
+            JButton saveButton = new JButton("Save");
+            saveButton.addActionListener(e -> {
+                String updateQuery = "UPDATE rents SET status = ?, explanation = ? WHERE id_rent = ?";
+                try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/projekgui", "root", "");
+                     PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
+                    pstmt.setString(1, statusField.getText());
+                    pstmt.setString(2, explanationField.getText());
+                    pstmt.setInt(3, id_rent);
+                    pstmt.executeUpdate();
+                    JOptionPane.showMessageDialog(this, "Data updated successfully!");
+                    dispose();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Error updating data!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+    
+            // Tombol untuk menutup dialog
+            JButton closeButton = new JButton("Close");
+            closeButton.addActionListener(e -> dispose());
+    
+            add(saveButton);
+            add(closeButton);
+            
+            setVisible(true);
+        }
+    }    
 }
