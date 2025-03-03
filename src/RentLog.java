@@ -46,7 +46,7 @@ public class RentLog extends Frame {
         });
 
         // Label kiri atas
-        Label titleLabel = new Label("Bali Rent Log", Label.LEFT);
+        Label titleLabel = new Label("Bali Rent Car", Label.LEFT);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
         titleLabel.setForeground(Color.BLACK);
         
@@ -157,7 +157,7 @@ public class RentLog extends Frame {
                     "JOIN car car ON r.id_car = car.id_car " +
                     "LEFT JOIN payments p ON r.id_payment = p.id_payment " +
                     "JOIN employees e ON r.id_employees = e.id_employees " +
-                    "ORDER BY FIELD(r.status, 'ready', 'on going', 'not available')";
+                    "ORDER BY FIELD(r.status, 'done', 'on going', 'problem')";
         
         try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/projekgui", "root", "");
             Statement stmt = conn.createStatement();
