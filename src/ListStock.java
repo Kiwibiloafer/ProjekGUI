@@ -103,7 +103,23 @@ public class ListStock extends Frame {
             }
         });
 
+        Button regisRentButton = new Button("Regis Rent");
+        regisRentButton.setBackground(Color.GREEN);
+        regisRentButton.setForeground(Color.WHITE);
+        regisRentButton.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        regisRentButton.setSize(30, 20);
+        regisRentButton.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow != -1) {
+                int carId = (int) model.getValueAt(selectedRow, 0);
+                regisRentForm(carId, idEmployees);
+            } else {
+                JOptionPane.showMessageDialog(this, "Choose the Car", "Warning", JOptionPane.WARNING_MESSAGE);
+            }
+        });
+
         bottomPanelRight.add(viewCarButton);
+        bottomPanelRight.add(regisRentButton);
         if (userPosition.equals("manager")) {
             bottomPanelRight.add(editCarButton);
             bottomPanelRight.add(addCarButton);
@@ -298,6 +314,65 @@ public class ListStock extends Frame {
             
             setVisible(true);
         }
+    }
+    
+    private void regisRentForm(Integer idCar, String employeeid) {
+        JDialog rentForm = new JDialog((Frame) null, "Register Rent", true);
+        rentForm.setSize(400, 400);
+        rentForm.setLayout(new GridLayout(6, 2));
+
+        Integer idEmployee =Integer.parseInt(employeeid);
+
+        JTextField nameField = new JTextField();
+        JTextField addressField = new JTextField();
+        JTextField phoneField = new JTextField();
+        JTextField nationalIdField = new JTextField();
+        JTextField durationField = new JTextField();
+        JButton submitButton = new JButton("Submit");
+    
+        rentForm.add(new JLabel("Name:")); rentForm.add(nameField);
+        rentForm.add(new JLabel("Address:")); rentForm.add(addressField);
+        rentForm.add(new JLabel("Phone Number:")); rentForm.add(phoneField);
+        rentForm.add(new JLabel("National ID:")); rentForm.add(nationalIdField);
+        rentForm.add(new JLabel("Duration (days):")); rentForm.add(durationField);
+        rentForm.add(submitButton);
+    
+        submitButton.addActionListener(e -> {
+            try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/projekgui", "root", "")) {
+                // Insert customer data
+                String customerQuery = "INSERT INTO customers (name, address, phone_number, national_id) VALUES (?, ?, ?, ?)";
+                PreparedStatement pstmtCustomer = conn.prepareStatement(customerQuery, Statement.RETURN_GENERATED_KEYS);
+                pstmtCustomer.setString(1, nameField.getText());
+                pstmtCustomer.setString(2, addressField.getText());
+                pstmtCustomer.setString(3, phoneField.getText());
+                pstmtCustomer.setString(4, nationalIdField.getText());
+                pstmtCustomer.executeUpdate();
+                
+                ResultSet rs = pstmtCustomer.getGeneratedKeys();
+                Integer idCustomer = null;
+                if (rs.next()) {
+                    idCustomer = rs.getInt(1);
+                }
+    
+                // Insert rent data
+                if (idCustomer != null) {
+                    String rentQuery = "INSERT INTO rents (id_employees, id_customer, id_car, rent_date, duration, status) VALUES (?, ?, ?, NOW(), ?, 'on going')";
+                    PreparedStatement pstmtRent = conn.prepareStatement(rentQuery);
+                    pstmtRent.setInt(1, idEmployee);
+                    pstmtRent.setInt(2, idCustomer);
+                    pstmtRent.setInt(3, idCar);
+                    pstmtRent.setInt(4, Integer.parseInt(durationField.getText()));
+                    pstmtRent.executeUpdate();
+                }
+    
+                loadTableData();
+                rentForm.dispose();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        });
+    
+        rentForm.setVisible(true);
     }
     
 }

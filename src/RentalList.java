@@ -15,7 +15,7 @@ public class RentalList extends Frame {
         this.userPosition = UserPosition;
         this.userName = UserName;
         this.idEmployees = idEmployees;
-        setTitle("RentLog");
+        setTitle("RentList");
         setExtendedState(Frame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
@@ -88,8 +88,8 @@ public class RentalList extends Frame {
         PayRentButton.addActionListener(e -> {
             int selectedRow = table.getSelectedRow();
             if (selectedRow != -1) {
-                int rentId = (int) model.getValueAt(selectedRow, 0);
-                new payRentForm(rentId);
+                int carId = (int) model.getValueAt(selectedRow, 0);
+                new payRentForm(carId);
             } else {
                 JOptionPane.showMessageDialog(this, "Choose the Rent", "Warning", JOptionPane.WARNING_MESSAGE);
             }
@@ -103,8 +103,8 @@ public class RentalList extends Frame {
         RetRentButton.addActionListener(e -> {
             int selectedRow = table.getSelectedRow();
             if (selectedRow != -1) {
-                int rentId = (int) model.getValueAt(selectedRow, 0);
-                new retRentForm(rentId);
+                int carId = (int) model.getValueAt(selectedRow, 0);
+                new retRentForm(carId);
             } else {
                 JOptionPane.showMessageDialog(this, "Choose the Rent", "Warning", JOptionPane.WARNING_MESSAGE);
             }
@@ -162,7 +162,6 @@ public class RentalList extends Frame {
             }
         });
     }
-    
     private void loadTableData() {
         model.setRowCount(0);
         String query = "SELECT r.id_rent, c.name AS customer_name, car.merk, car.type, car.colour, " +

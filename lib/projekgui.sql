@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 28, 2025 at 03:03 AM
+-- Generation Time: Mar 04, 2025 at 08:27 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -94,7 +94,8 @@ CREATE TABLE `payments` (
   `id_payment` int(20) NOT NULL,
   `id_rent` int(50) NOT NULL,
   `total_price` varchar(50) NOT NULL,
-  `status` varchar(50) NOT NULL
+  `status` enum('waiting','paid') NOT NULL,
+  `method` enum('Cash','Debit','Qris') DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -105,15 +106,15 @@ CREATE TABLE `payments` (
 
 CREATE TABLE `rents` (
   `id_rent` int(50) NOT NULL,
-  `id_staff` int(50) NOT NULL,
-  `id_customer` int(50) NOT NULL,
+  `id_employees` int(50) NOT NULL,
+  `id_customer` int(50) DEFAULT NULL,
   `id_car` int(50) NOT NULL,
   `rent_date` datetime NOT NULL,
   `duration` int(50) NOT NULL,
-  `return_date` datetime NOT NULL,
-  `status` varchar(50) NOT NULL,
-  `explanation` text NOT NULL,
-  `id_payment` int(50) NOT NULL
+  `return_date` datetime DEFAULT NULL,
+  `status` enum('done','on going','problem') NOT NULL,
+  `explanation` text DEFAULT NULL,
+  `id_payment` int(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -164,7 +165,7 @@ ALTER TABLE `car`
 -- AUTO_INCREMENT for table `customers`
 --
 ALTER TABLE `customers`
-  MODIFY `id_customer` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_customer` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `employees`
@@ -176,13 +177,13 @@ ALTER TABLE `employees`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id_payment` int(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_payment` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `rents`
 --
 ALTER TABLE `rents`
-  MODIFY `id_rent` int(50) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_rent` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

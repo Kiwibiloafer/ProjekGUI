@@ -71,10 +71,10 @@ public class Dashboard extends Frame {
             new RentalList(userPosition, userName, idEmployees); 
         });
 
-        Button RegisRent = createStyledButton("Regis Rent", new Color(0, 153, 51));
+        Button RegisRent = createStyledButton("Customer", new Color(0, 153, 51));
         RegisRent.addActionListener(e -> {
             dispose(); // Menutup dashboard
-            new RegisRent(userPosition, userName, idEmployees); 
+            new Customer(userPosition, userName, idEmployees); 
         });
 
         Button ListStock = createStyledButton("List Stock", new Color(255, 140, 0));
