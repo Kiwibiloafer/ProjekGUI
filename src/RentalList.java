@@ -424,6 +424,7 @@ public class RentalList extends Frame {
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(this, "Error processing payment!", "Error", JOptionPane.ERROR_MESSAGE);
                 }
+                loadTableData();
             });
             
             // Tombol untuk menutup dialog
@@ -443,6 +444,7 @@ public class RentalList extends Frame {
             setSize(500, 500);
             setLayout(new GridLayout(0, 2));
             setModal(true);
+            Integer idCar = -1;
             
             // Membuat label dan field
             JTextField idField = new JTextField();
@@ -475,7 +477,7 @@ public class RentalList extends Frame {
             
             // Query untuk mengambil data dari database
             String query = "SELECT r.id_rent, c.name AS customer_name, c.address, c.phone_number, c.national_id, " +
-                    "car.merk, car.type, car.colour, car.reg_number, car.frame_number, car.engine_number, " +
+                    "car.id_car, car.merk, car.type, car.colour, car.reg_number, car.frame_number, car.engine_number, " +
                     "r.status, r.rent_date, r.duration, r.return_date, r.explanation, " +
                     "p.status AS payment_status, p.total_price, e.name AS staff " +
                     "FROM rents r " +
@@ -509,6 +511,7 @@ public class RentalList extends Frame {
                     paymentStatusField.setText(rs.getString("payment_status"));
                     priceField.setText(rs.getString("total_price"));
                     staffField.setText(rs.getString("staff"));
+                    idCar = rs.getInt("id_car");
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -537,19 +540,35 @@ public class RentalList extends Frame {
             
             // Tombol untuk mengembalikan mobil rental
             JButton returnButton = new JButton("Return Car");
+            int finalIdCar = idCar;
             returnButton.addActionListener(e -> {
                 String updateRentQuery = "UPDATE rents SET status = ?, return_date = ? WHERE id_rent = ?";
-                try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/projekgui", "root", "");
-                     PreparedStatement pstmt = conn.prepareStatement(updateRentQuery)) {
-                    pstmt.setString(1, "Done");
-                    pstmt.setDate(2, new java.sql.Date(System.currentTimeMillis())); // Mengisi return_date dengan tanggal saat ini
-                    pstmt.setInt(3, id_rent);
-                    pstmt.executeUpdate();
-                    JOptionPane.showMessageDialog(this, "Car returned successfully!");
-                    dispose();
+                String updateCarQuery = "UPDATE car SET status = ? WHERE id_car = ?";
+                try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/projekgui", "root", "")) {
+                    conn.setAutoCommit(false);
+                    try (PreparedStatement pstmtRent = conn.prepareStatement(updateRentQuery);
+                         PreparedStatement pstmtCar = conn.prepareStatement(updateCarQuery)) {
+                        
+                        pstmtRent.setString(1, "Done");
+                        pstmtRent.setDate(2, new java.sql.Date(System.currentTimeMillis()));
+                        pstmtRent.setInt(3, id_rent);
+                        pstmtRent.executeUpdate();
+                        
+                        pstmtCar.setString(1, "ready");
+                        pstmtCar.setInt(2, finalIdCar);
+                        pstmtCar.executeUpdate();
+                        
+                        conn.commit();
+                        JOptionPane.showMessageDialog(this, "Car returned successfully and status updated to 'ready'!");
+                        dispose();
+                    } catch (SQLException ex) {
+                        conn.rollback();
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(this, "Error processing return!", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
                 } catch (SQLException ex) {
                     ex.printStackTrace();
-                    JOptionPane.showMessageDialog(this, "Error processing return!", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Database connection error!", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             });
             

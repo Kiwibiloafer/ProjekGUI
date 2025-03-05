@@ -259,6 +259,7 @@ public class PayList extends Frame {
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(this, "Error processing payment!", "Error", JOptionPane.ERROR_MESSAGE);
                 }
+                loadTableData();
             });
             
             // Tombol untuk menutup dialog

@@ -11,10 +11,9 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
 
 --
@@ -28,7 +27,7 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `car` (
-  `id_car` int(50) NOT NULL,
+  `id_car` int(50) NOT NULL AUTO_INCREMENT,
   `merk` varchar(50) NOT NULL,
   `type` varchar(50) NOT NULL,
   `colour` varchar(50) NOT NULL,
@@ -36,7 +35,8 @@ CREATE TABLE `car` (
   `engine_number` varchar(50) NOT NULL,
   `reg_number` varchar(50) NOT NULL,
   `status` varchar(50) NOT NULL,
-  `price` int(50) NOT NULL
+  `price` int(50) NOT NULL,
+  PRIMARY KEY (`id_car`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -55,11 +55,12 @@ INSERT INTO `car` (`id_car`, `merk`, `type`, `colour`, `frame_number`, `engine_n
 --
 
 CREATE TABLE `customers` (
-  `id_customer` int(11) NOT NULL,
+  `id_customer` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
   `address` varchar(70) NOT NULL,
   `phone_number` varchar(15) NOT NULL,
-  `national_id` varchar(15) NOT NULL
+  `national_id` varchar(15) NOT NULL,
+  PRIMARY KEY (`id_customer`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -69,11 +70,12 @@ CREATE TABLE `customers` (
 --
 
 CREATE TABLE `employees` (
-  `id_employees` int(11) NOT NULL,
+  `id_employees` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
   `username` varchar(50) NOT NULL,
   `password` varchar(50) NOT NULL,
-  `position` varchar(50) NOT NULL
+  `position` varchar(50) NOT NULL,
+  PRIMARY KEY (`id_employees`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -91,11 +93,12 @@ INSERT INTO `employees` (`id_employees`, `name`, `username`, `password`, `positi
 --
 
 CREATE TABLE `payments` (
-  `id_payment` int(20) NOT NULL,
+  `id_payment` int(20) NOT NULL AUTO_INCREMENT,
   `id_rent` int(50) NOT NULL,
   `total_price` varchar(50) NOT NULL,
   `status` enum('waiting','paid') NOT NULL,
-  `method` enum('Cash','Debit','Qris') DEFAULT NULL
+  `method` enum('Cash','Debit','Qris') DEFAULT NULL,
+  PRIMARY KEY (`id_payment`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -105,7 +108,7 @@ CREATE TABLE `payments` (
 --
 
 CREATE TABLE `rents` (
-  `id_rent` int(50) NOT NULL,
+  `id_rent` int(50) NOT NULL AUTO_INCREMENT,
   `id_employees` int(50) NOT NULL,
   `id_customer` int(50) DEFAULT NULL,
   `id_car` int(50) NOT NULL,
@@ -114,77 +117,39 @@ CREATE TABLE `rents` (
   `return_date` datetime DEFAULT NULL,
   `status` enum('done','on going','problem') NOT NULL,
   `explanation` text DEFAULT NULL,
-  `id_payment` int(50) DEFAULT NULL
+  `id_payment` int(50) DEFAULT NULL,
+  PRIMARY KEY (`id_rent`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `car`
---
-ALTER TABLE `car`
-  ADD PRIMARY KEY (`id_car`);
-
---
--- Indexes for table `customers`
---
-ALTER TABLE `customers`
-  ADD PRIMARY KEY (`id_customer`);
-
---
--- Indexes for table `employees`
---
-ALTER TABLE `employees`
-  ADD PRIMARY KEY (`id_employees`);
-
---
--- Indexes for table `payments`
---
-ALTER TABLE `payments`
-  ADD PRIMARY KEY (`id_payment`);
-
---
--- Indexes for table `rents`
---
-ALTER TABLE `rents`
-  ADD PRIMARY KEY (`id_rent`);
-
---
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table `car`
---
-ALTER TABLE `car`
-  MODIFY `id_car` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT for table `customers`
---
-ALTER TABLE `customers`
-  MODIFY `id_customer` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
-
---
--- AUTO_INCREMENT for table `employees`
---
-ALTER TABLE `employees`
-  MODIFY `id_employees` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT for table `payments`
---
-ALTER TABLE `payments`
-  MODIFY `id_payment` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT for table `rents`
---
-ALTER TABLE `rents`
-  MODIFY `id_rent` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 COMMIT;
+
+DELIMITER $$
+
+CREATE TRIGGER after_rent_insert
+AFTER INSERT ON rents
+FOR EACH ROW
+BEGIN
+    DECLARE car_price INT;
+    
+    -- Ambil harga mobil berdasarkan id_car
+    SELECT price INTO car_price FROM car WHERE id_car = NEW.id_car;
+    
+    -- Masukkan data pembayaran otomatis ke tabel payments
+    INSERT INTO payments (id_rent, total_price, status, method)
+    VALUES (NEW.id_rent, NEW.duration * car_price, 'waiting', NULL);
+END $$
+
+DELIMITER ;
+
+-- Buat event scheduler untuk update id_payment secara otomatis --
+SET GLOBAL event_scheduler = ON;
+
+CREATE EVENT update_rent_payment
+ON SCHEDULE EVERY 1 SECOND
+DO
+    UPDATE rents
+    SET id_payment = (SELECT id_payment FROM payments WHERE payments.id_rent = rents.id_rent)
+    WHERE id_payment IS NULL;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

@@ -320,9 +320,9 @@ public class ListStock extends Frame {
         JDialog rentForm = new JDialog((Frame) null, "Register Rent", true);
         rentForm.setSize(400, 400);
         rentForm.setLayout(new GridLayout(6, 2));
-
-        Integer idEmployee =Integer.parseInt(employeeid);
-
+    
+        Integer idEmployee = Integer.parseInt(employeeid);
+    
         JTextField nameField = new JTextField();
         JTextField addressField = new JTextField();
         JTextField phoneField = new JTextField();
@@ -339,31 +339,58 @@ public class ListStock extends Frame {
     
         submitButton.addActionListener(e -> {
             try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/projekgui", "root", "")) {
-                // Insert customer data
-                String customerQuery = "INSERT INTO customers (name, address, phone_number, national_id) VALUES (?, ?, ?, ?)";
-                PreparedStatement pstmtCustomer = conn.prepareStatement(customerQuery, Statement.RETURN_GENERATED_KEYS);
-                pstmtCustomer.setString(1, nameField.getText());
-                pstmtCustomer.setString(2, addressField.getText());
-                pstmtCustomer.setString(3, phoneField.getText());
-                pstmtCustomer.setString(4, nationalIdField.getText());
-                pstmtCustomer.executeUpdate();
+                conn.setAutoCommit(false); // Mulai transaksi
                 
-                ResultSet rs = pstmtCustomer.getGeneratedKeys();
+                String nationalId = nationalIdField.getText();
                 Integer idCustomer = null;
-                if (rs.next()) {
-                    idCustomer = rs.getInt(1);
+    
+                // Cek apakah customer sudah ada berdasarkan national_id
+                String checkCustomerQuery = "SELECT id_customer FROM customers WHERE national_id = ?";
+                try (PreparedStatement pstmtCheck = conn.prepareStatement(checkCustomerQuery)) {
+                    pstmtCheck.setString(1, nationalId);
+                    ResultSet rs = pstmtCheck.executeQuery();
+                    if (rs.next()) {
+                        idCustomer = rs.getInt("id_customer"); // Jika sudah ada, gunakan id_customer yang lama
+                    }
                 }
     
-                // Insert rent data
-                if (idCustomer != null) {
-                    String rentQuery = "INSERT INTO rents (id_employees, id_customer, id_car, rent_date, duration, status) VALUES (?, ?, ?, NOW(), ?, 'on going')";
-                    PreparedStatement pstmtRent = conn.prepareStatement(rentQuery);
+                // Jika customer belum ada, insert data baru
+                if (idCustomer == null) {
+                    String insertCustomerQuery = "INSERT INTO customers (name, address, phone_number, national_id) VALUES (?, ?, ?, ?)";
+                    try (PreparedStatement pstmtCustomer = conn.prepareStatement(insertCustomerQuery, Statement.RETURN_GENERATED_KEYS)) {
+                        pstmtCustomer.setString(1, nameField.getText());
+                        pstmtCustomer.setString(2, addressField.getText());
+                        pstmtCustomer.setString(3, phoneField.getText());
+                        pstmtCustomer.setString(4, nationalId);
+                        pstmtCustomer.executeUpdate();
+    
+                        // Ambil id_customer yang baru dimasukkan
+                        ResultSet generatedKeys = pstmtCustomer.getGeneratedKeys();
+                        if (generatedKeys.next()) {
+                            idCustomer = generatedKeys.getInt(1);
+                        }
+                    }
+                }
+    
+                // Insert rent data dengan id_customer yang valid
+                String rentQuery = "INSERT INTO rents (id_employees, id_customer, id_car, rent_date, duration, status) VALUES (?, ?, ?, NOW(), ?, 'on going')";
+                try (PreparedStatement pstmtRent = conn.prepareStatement(rentQuery)) {
                     pstmtRent.setInt(1, idEmployee);
                     pstmtRent.setInt(2, idCustomer);
                     pstmtRent.setInt(3, idCar);
                     pstmtRent.setInt(4, Integer.parseInt(durationField.getText()));
                     pstmtRent.executeUpdate();
                 }
+    
+                // Update status mobil menjadi 'on going'
+                String carQuery = "UPDATE car SET status = ? WHERE id_car = ?";
+                try (PreparedStatement pstmtCar = conn.prepareStatement(carQuery)) {
+                    pstmtCar.setString(1, "on going");
+                    pstmtCar.setInt(2, idCar);
+                    pstmtCar.executeUpdate();
+                }
+    
+                conn.commit(); // Commit transaksi jika semuanya berhasil
     
                 loadTableData();
                 rentForm.dispose();
@@ -374,5 +401,6 @@ public class ListStock extends Frame {
     
         rentForm.setVisible(true);
     }
+    
     
 }
