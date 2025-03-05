@@ -80,7 +80,7 @@ public class Customer extends Frame {
         bottomPanel.setPreferredSize(new Dimension(getWidth(), 50));
         Panel bottomPanelRight = new Panel(new FlowLayout(FlowLayout.RIGHT));
 
-        Button editCustomerButton = new Button("Regis Rent");
+        Button editCustomerButton = new Button("Edit Customer");
         editCustomerButton.setBackground(Color.GREEN);
         editCustomerButton.setForeground(Color.WHITE);
         editCustomerButton.setFont(new Font("Segoe UI", Font.BOLD, 20));
@@ -91,7 +91,7 @@ public class Customer extends Frame {
                 int cusId = (int) model.getValueAt(selectedRow, 0);
                 editCustomerForm(cusId);
             } else {
-                JOptionPane.showMessageDialog(this, "Choose the Car", "Warning", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Choose the Cus", "Warning", JOptionPane.WARNING_MESSAGE);
             }
         });
         if (userPosition.equals("manager")) {

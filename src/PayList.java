@@ -77,7 +77,7 @@ public class PayList extends Frame {
                 int rentId = (int) model.getValueAt(selectedRow, 0);
                 new payRentForm(rentId);
             } else {
-                JOptionPane.showMessageDialog(this, "Choose the Rent", "Warning", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Choose the Payment", "Warning", JOptionPane.WARNING_MESSAGE);
             }
         });
         
